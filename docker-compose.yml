@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  webapp:
+    image: "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+    restart: always
+    secrets:
+      - source: webapp-appsettings.json
+        target: appsettings.Production.json
+
+secrets:
+  webapp-appsettings.json:
+    file: /root/secrets/webapp-appsettings.json

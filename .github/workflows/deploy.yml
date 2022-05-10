@@ -1,0 +1,62 @@
+name: Deploy:Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Image tag
+        default: master
+        type: string
+        required: true
+
+env:
+  REGISTRY: ghcr.io/kiedd
+  IMAGE_NAME: sample-webapp
+  IMAGE_TAG: ${{ github.event.inputs.version }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout the repo 
+        uses: actions/checkout@v2
+
+      - name: Make envfile for docker-compose
+        uses: SpicyPizza/create-envfile@v1.2
+        with:
+          envkey_REGISTRY: ${{ env.REGISTRY }}
+          envkey_IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          envkey_IMAGE_TAG: ${{ env.IMAGE_TAG }}
+
+      - name: Copy docker-compose.yml and .env to Digital Ocean droplet
+        uses: appleboy/scp-action@v0.1.2
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          source: ".env,docker-compose.yml"
+          target: deploy_config
+          rm: true
+
+      - name: Deploy to Digital Ocean droplet
+        uses: appleboy/ssh-action@v0.1.4
+        env:
+          HOST: ${{ secrets.HOST }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          envs: REGISTRY
+          script: |
+            # Go to directory which contains docker-compose.yml
+            cd deploy_config
+            # Login to registry
+            docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} ${{ env.REGISTRY }}
+            # Stop running container
+            docker-compose down
+            # Remove old container
+            docker-compose pull
+            # Run a new container from a new image
+            docker-compose up -d
