@@ -2,9 +2,9 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
 # copy csproj and restore as distinct layers
-COPY src/Api/*.csproj ./src/Api/
+COPY src/Api/*.csproj ./Api/
 
-RUN dotnet restore src/Api/Api.csproj
+RUN dotnet restore Api/Api.csproj
 
 # copy everything else and build app
 COPY src/ ./

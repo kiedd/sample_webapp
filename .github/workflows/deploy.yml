@@ -55,8 +55,8 @@ jobs:
             # Login to registry
             docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} ${{ env.REGISTRY }}
             # Stop running container
-            docker-compose down
+            docker compose down
             # Remove old container
-            docker-compose pull
+            docker compose pull
             # Run a new container from a new image
-            docker-compose up -d
+            docker compose up -d
