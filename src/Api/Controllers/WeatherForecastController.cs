@@ -38,10 +38,4 @@ public class WeatherForecastController : ControllerBase
         var value = _configuration.GetSection("MySecretSetting").Get<string>();
         return value;
     }
-
-    [HttpGet("GetSampleString")]
-    public string GetSampleString()
-    {
-        return "this is my sample web application";
-    }
 }
